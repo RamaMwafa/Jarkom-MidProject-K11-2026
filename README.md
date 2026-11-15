@@ -34,6 +34,19 @@ Tabel CIDR
 
 Cara menghitung dengan CIDR adalah sebagai berikut:
 
+1. Tentukan prefix tiap subnet
+2. Kelompokkan subnet per router, lalu jumlahkan ukuran blok
+3. Cari supernet tiap router
+4. Alokasikan supernet berurutan dari yang terbesar
+5. Bagi subnet di dalam supernet memakai offset
+6. Hitung kolom host dan broadcast
+7. Alokasikan link antar router (/30) dari pool terpisah
+8. Ringkas semuanya menjadi satu blok akar
+
+Catatan:
+Revisi tabel VLSM : pada saat ETS ada kesalahan dalam menghitung Network ID karena kurang teliti
+
+Revisi tabel CIDR : pada saat ETS tidak membuat tabel CIDR
 ### soal 3
 
 - Seluruh LAN dapat saling berkomunikasi hanya dengan static route (dan default route untuk arah keluar).
