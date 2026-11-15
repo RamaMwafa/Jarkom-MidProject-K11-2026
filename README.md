@@ -1,4 +1,4 @@
-# MidProject Jarkom
+<img width="1198" height="388" alt="image" src="https://github.com/user-attachments/assets/160e86ec-2e53-4f82-ab71-7e80bd6f2594" /># MidProject Jarkom
 
 | Nama                   | NRP        |
 | ---------------------- | ---------- |
@@ -413,11 +413,11 @@ GRE hanya membungkus paket (IP protocol 47) tanpa enkripsi, sehingga kerahasiaan
 ## 6.5 Dokumentasi Screenshot
 
 
-![Konfigurasi Tunnel R-PUSAT](screenshots/06-tunnel-pusat.png)
+![Konfigurasi Tunnel R-PUSAT](foto/no6a.png)
 
 **Gambar 6.2 — Tracert Balai Kota menuju Pelabuhan**
 
-![Tracert Balai Kota ke Pelabuhan](screenshots/06-tracert-bk-pelabuhan.png)
+![Tracert Balai Kota ke Pelabuhan](foto/no6b.png)
 
 
 ---
@@ -509,10 +509,10 @@ Catatan: di `K11_VLSM_OSPF.pkt`, `Tunnel0` tidak dimasukkan ke OSPF, jadi Balai 
 ![Konfigurasi OSPF R-PUSAT](screenshots/07-ospf-config-pusat.png)
 
 
-![Neighbor OSPF](screenshots/07-ospf-neighbor.png)
+![Neighbor OSPF](foto/no7a.png)
 
 
-![Tracert Failover](screenshots/07-tracert-failover.png)
+![Tracert Failover](foto/no7b.png)
 
 
 # 8. Implementasi Layanan Aplikasi Smart City
