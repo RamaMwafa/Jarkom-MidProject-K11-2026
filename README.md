@@ -1,4 +1,3 @@
-<img width="1198" height="388" alt="image" src="https://github.com/user-attachments/assets/160e86ec-2e53-4f82-ab71-7e80bd6f2594" /># MidProject Jarkom
 
 | Nama                   | NRP        |
 | ---------------------- | ---------- |
