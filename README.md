@@ -18,6 +18,9 @@ Berikut adalah topologi jaringan pada Cisco Packet Tracer
 
 ### Soal 2
 
+Berikut tabel subnetting
+- [Tabel Subnettng](tabel_subnetting.xlxs)
+
 Tabel VLSM
 
 Cara menghitung dengan VLSM adalah sebagai berikut:
