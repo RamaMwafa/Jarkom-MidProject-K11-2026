@@ -10,11 +10,11 @@
 
 Buatlah topologi jaringan sesuai dengan gambar di bawah ini. Buatlah konfigurasi IP address pada setiap perangkat yang ada di topologi tersebut.
 
-![alt text](image-1.png)
+![alt text](foto/image-1.png)
 
 Berikut adalah topologi jaringan pada Cisco Packet Tracer
 
-![alt text](image.png)
+![alt text](foto/image.png)
 
 ### Soal 2
 
@@ -51,10 +51,10 @@ Pada soal ini, kita diminta untuk membuat konfigurasi static routing pada router
 
 berikut confignya
 
-- [Config soal 3](konfigurasi_static_routing_soal_no_3.md)
+- [Config soal 3](foto/konfigurasi_static_routing_soal_no_3.md)
 
 Setelah itu, kita lihat rute dari R-PUSAT dan R-UTARA dengan perintah `show ip route` pada masing-masing router. Hasilnya adalah sebagai berikut:
 
-![alt text](image-3.png)
+![alt text](foto/image-3.png)
 
-![alt text](image-4.png)
+![alt text](foto/image-4.png)
