@@ -357,6 +357,163 @@ Penggunaan satu IP publik mengurangi kebutuhan alokasi alamat publik, sekaligus 
 R-ISP tidak perlu mengetahui seluruh subnet privat karena translasi dilakukan oleh R-PUSAT. Dengan demikian, komunikasi menuju internet dapat berlangsung tanpa menambahkan rute privat internal pada router ISP.
 
 ---
+# 6. Implementasi Tunnel GRE
+
+## 6.1 Tujuan
+
+Membuat tunnel GRE antara R-PUSAT (192.168.11.1) dan R-PELABUHAN (192.168.11.2) untuk lalu lintas Balai Kota ↔ Pelabuhan.
+
+## 6.2 Konfigurasi
+
+**R-PUSAT**
+
+```cisco
+interface Tunnel0
+ ip address 192.168.11.1 255.255.255.252
+ tunnel source GigabitEthernet0/1
+ tunnel destination 10.88.241.54
+!
+ip route 10.88.160.0 255.255.224.0 192.168.11.2
+ip route 10.88.240.0 255.255.255.128 192.168.11.2
+ip route 10.88.160.0 255.255.224.0 10.88.241.38 10
+ip route 10.88.240.0 255.255.255.128 10.88.241.38 10
+```
+
+**R-PELABUHAN**
+
+```cisco
+interface Tunnel0
+ ip address 192.168.11.2 255.255.255.252
+ tunnel source GigabitEthernet0/0
+ tunnel destination 10.88.241.37
+!
+ip route 10.88.224.0 255.255.248.0 192.168.11.1
+ip route 10.88.241.0 255.255.255.224 192.168.11.1
+ip route 0.0.0.0 0.0.0.0 10.88.241.53
+```
+
+- `tunnel source` harus interface fisik, bukan SVI, jadi L2 dipasang di `Gi0/1`.
+- Tunnel dipilih karena AD 1 mengalahkan route cadangan via R-UTARA (AD 10), dan route `/21` lebih spesifik dari default `/0`.
+
+## 6.3 Pengujian
+
+```cisco
+show ip interface brief | include Tunnel
+show ip route | include 192.168.11
+```
+
+```bash
+tracert 10.88.160.11
+```
+
+## 6.4 Analisis
+
+GRE hanya membungkus paket (IP protocol 47) tanpa enkripsi, sehingga kerahasiaan butuh IPsec.
+
+## 6.5 Dokumentasi Screenshot
+
+
+![Konfigurasi Tunnel R-PUSAT](screenshots/06-tunnel-pusat.png)
+
+**Gambar 6.2 — Tracert Balai Kota menuju Pelabuhan**
+
+![Tracert Balai Kota ke Pelabuhan](screenshots/06-tracert-bk-pelabuhan.png)
+
+
+---
+
+# 7. Implementasi OSPF
+
+## 7.1 Tujuan
+
+Mengganti static route antar-router dengan OSPF area 0 dan menambah link cadangan L7 (R-DC .57 – R-UTARA .58, 10.88.241.56/30).
+
+## 7.2 Konfigurasi
+
+**R-PUSAT**
+
+```cisco
+router ospf 1
+ router-id 1.1.1.1
+ passive-interface default
+ no passive-interface GigabitEthernet0/1
+ no passive-interface GigabitEthernet0/2
+ no passive-interface Vlan103
+ no passive-interface Vlan104
+ no passive-interface Vlan105
+ network 10.88.241.32 0.0.0.3 area 0
+ network 10.88.241.36 0.0.0.3 area 0
+ network 10.88.241.40 0.0.0.3 area 0
+ network 10.88.241.44 0.0.0.3 area 0
+ network 10.88.241.48 0.0.0.3 area 0
+ network 10.88.224.0 0.0.7.255 area 0
+ network 10.88.241.0 0.0.0.31 area 0
+ default-information originate
+!
+ip route 0.0.0.0 0.0.0.0 203.0.113.45
+```
+
+**R-DC (link L7)**
+
+```cisco
+interface Vlan107
+ ip address 10.88.241.57 255.255.255.252
+!
+router ospf 1
+ router-id 2.2.2.2
+ passive-interface default
+ no passive-interface GigabitEthernet0/0
+ no passive-interface Vlan107
+ network 10.88.241.32 0.0.0.3 area 0
+ network 10.88.241.56 0.0.0.3 area 0
+ network 10.88.239.0 0.0.0.255 area 0
+ network 10.88.96.0 0.0.31.255 area 0
+```
+
+- Interface LAN dibuat passive, hanya link antar-router yang mengirim pesan OSPF.
+- Default route hanya di R-PUSAT dan disebarkan lewat `default-information originate`.
+- R-DC memakai HWIC-4ESW (Vlan107) untuk L7 karena port Gigabit 2911 sudah habis.
+
+Konfigurasi router lain ada di folder `konfigurasi/ospf/`.
+
+## 7.3 Pengujian
+
+```cisco
+show ip ospf neighbor
+show ip route | include 0.0.0.0
+```
+
+```bash
+tracert 10.88.224.11
+```
+
+Failover: `shutdown` pada `Gi0/2` R-PUSAT (L1), tunggu sekitar 40 detik, ulangi tracert dan ping dari PC-CCTV-KOTA.
+
+| Pengujian | Hasil yang Diharapkan | Hasil Aktual |
+|---|---|---|
+| Neighbor OSPF | Semua FULL | Semua FULL |
+| Default route R-PELABUHAN | `O*E2 0.0.0.0/0` via 10.88.241.53 | Sesuai |
+| Tracert CCTV → Pegawai (normal) | Lewat L1 (10.88.241.33) | 10.88.96.1 → 10.88.241.33 → 10.88.224.11 |
+| Tracert setelah L1 mati | Lewat L7 dan L2 | 10.88.96.1 → 10.88.241.58 → 10.88.241.37 → 10.88.224.11 |
+| Ping 8.8.8.8 setelah L1 mati | Berhasil | Berhasil, loss 0% |
+
+## 7.4 Analisis
+
+OSPF memindahkan lalu lintas R-DC ke L7 saat L1 putus tanpa konfigurasi manual, tetapi hanya L1, L2, dan L7 yang punya jalur alternatif.
+
+Catatan: di `K11_VLSM_OSPF.pkt`, `Tunnel0` tidak dimasukkan ke OSPF, jadi Balai Kota ↔ Pelabuhan lewat R-UTARA.
+
+## 7.5 Dokumentasi Screenshot
+
+
+![Konfigurasi OSPF R-PUSAT](screenshots/07-ospf-config-pusat.png)
+
+
+![Neighbor OSPF](screenshots/07-ospf-neighbor.png)
+
+
+![Tracert Failover](screenshots/07-tracert-failover.png)
+
 
 # 8. Implementasi Layanan Aplikasi Smart City
 
