@@ -505,7 +505,7 @@ Catatan: di `K11_VLSM_OSPF.pkt`, `Tunnel0` tidak dimasukkan ke OSPF, jadi Balai 
 ## 7.5 Dokumentasi Screenshot
 
 
-![Konfigurasi OSPF R-PUSAT](screenshots/07-ospf-config-pusat.png)
+![Konfigurasi OSPF R-PUSAT](foto/no7c.png)
 
 
 ![Neighbor OSPF](foto/no7a.png)
